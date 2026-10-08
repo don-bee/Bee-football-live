@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bee Football Live</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent: #00ff87;
+            --text-main: #ffffff;
+            --text-muted: #b0b0b0;
+            --border: #2a2a2a;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 70px;
+        }
+        header {
+            background-color: var(--card-bg);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .container {
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 20px 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        /* Match Card */
+        .match-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .team {
+            font-weight: 600;
+            font-size: 0.95rem;
+            width: 35%;
+            text-align: center;
+        }
+        .score-box {
+            background: #252525;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            color: var(--accent);
+            text-align: center;
+        }
+        .match-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+        }
+        /* Polls */
+        .poll-options button {
+            width: 100%;
+            background: #2a2a2a;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 6px 0;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .poll-options button:active {
+            background: var(--accent);
+            color: black;
+        }
+        /* Opinion Form */
+        input[type="text"], textarea {
+            width: 100%;
+            background: #252525;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .post-btn {
+            background: var(--accent);
+            color: black;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+        /* Navigation Bottom Bar */
+        nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+        nav button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        nav button.active {
+            color: var(--accent);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>🐝 Bee Football Live</header>
+
+    <div class="container">
+        <!-- Section 1: Today's Matches -->
+        <div class="section-title">Today's Matches</div>
+        
+        <div class="card">
+            <div class="match-meta">
+                <span>Premier League</span>
+                <span style="color: var(--accent);">LIVE 78'</span>
+            </div>
+            <div class="match-card">
+                <span class="team">Man City</span>
+                <span class="score-box">2 - 1</span>
+                <span class="team">Arsenal</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="match-meta">
+                <span>Champions League</span>
+                <span>FT</span>
+            </div>
+            <div class="match-card">
+                <span class="team">Barcelona</span>
+                <span class="score-box">3 - 2</span>
+                <span class="team">Real Madrid</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="match-meta">
+                <span>La Liga</span>
+                <span>21:00</span>
+            </div>
+            <div class="match-card">
+                <span class="team">Atletico</span>
+                <span class="score-box">vs</span>
+                <span class="team">Sevilla</span>
+            </div>
+        </div>
+
+        <!-- Section 2: Simple Polls -->
+        <div class="section-title">Fan Polls</div>
+        <div class="card">
+            <p style="margin-top:0; font-size:0.95rem;">Who is better: Messi or Ronaldo?</p>
+            <div class="poll-options">
+                <button onclick="alert('Vote recorded for Messi!')">Lionel Messi</button>
+                <button onclick="alert('Vote recorded for Ronaldo!')">Cristiano Ronaldo</button>
+            </div>
+        </div>
+
+        <!-- Section 3: Share Your Opinion -->
+        <div class="section-title">Fan Zone / Opinions</div>
+        <div class="card">
+            <p style="margin-top:0; font-size:0.90rem;">Got a hot take? Share your opinion:</p>
+            <textarea id="userOpinion" rows="3" placeholder="e.g., Is Manchester City still the face of the Premier League?"></textarea>
+            <button class="post-btn" onclick="postOpinion()">Post Opinion</button>
+            <div id="opinionFeed" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- Section 4: Football News -->
+        <div class="section-title">Latest News</div>
+        <div class="card">
+            <h4 style="margin:0 0 6px 0; font-size:0.95rem;">Transfer Update: Major summer moves expected across Europe</h4>
+            <p style="font-size:0.8rem; color: var(--text-muted); margin:0;">Bee Football News • 1 hour ago</p>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav>
+        <button class="active">Matches</button>
+        <button>News</button>
+        <button>Polls</button>
+        <button>Favorites</button>
+    </nav>
+
+    <script>
+        function postOpinion() {
+            const text = document.getElementById('userOpinion').value;
+            if(text.trim() === "") {
+                alert("Please write something first!");
+                return;
+            }
+            const feed = document.getElementById('opinionFeed');
+            const newPost = document.createElement('div');
+            newPost.style.background = "#252525";
+            newPost.style.padding = "10px";
+            newPost.style.borderRadius = "8px";
+            newPost.style.marginTop = "8px";
+            newPost.style.fontSize = "0.9rem";
+            newPost.innerHTML = `<strong>You:</strong> ${text}`;
+            feed.prepend(newPost);
+            document.getElementById('userOpinion').value = "";
+        }
+    </script>
+</body>
+</html>
