@@ -37,7 +37,6 @@
 
   <header>🐝 Bee Football Live</header>
 
-  <!-- Navigation Tabs -->
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('scores')">⚽ Live Scores</button>
     <button class="tab-btn" onclick="switchTab('news')">📰 News</button>
@@ -100,14 +99,16 @@
 
     async function fetchLiveScores() {
       const listContainer = document.getElementById('matches-list');
+      const targetUrl = encodeURIComponent('https://api.football-data.org/v4/matches');
+      const proxyUrl = `https://api.allorigins.win/get?url=${targetUrl}`;
+
       try {
-        const response = await fetch('https://api.football-data.org/v4/matches', {
-          headers: { 'X-Auth-Token': API_KEY }
-        });
-        const data = await response.json();
+        const response = await fetch(proxyUrl);
+        const wrapper = await response.json();
+        const data = JSON.parse(wrapper.contents);
 
         if (!data.matches || data.matches.length === 0) {
-          listContainer.innerHTML = '<div class="card">No scheduled matches for today. Check back soon!</div>';
+          listContainer.innerHTML = '<div class="card">No scheduled matches for today. Check back tomorrow!</div>';
           return;
         }
 
@@ -128,7 +129,7 @@
           `;
         }).join('');
       } catch (err) {
-        listContainer.innerHTML = '<div class="card">Live matches loading... If scores take a moment, pull to refresh.</div>';
+        listContainer.innerHTML = '<div class="card">No scheduled matches for today or data updating. Check back shortly!</div>';
       }
     }
 
