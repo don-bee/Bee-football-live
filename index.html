@@ -21,16 +21,23 @@
     .container { padding: 15px; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 12px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 12px; cursor: pointer; transition: transform 0.1s; }
+    .card:active { transform: scale(0.98); }
     .match-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
     .badge-live { background: #ef4444; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; }
     .badge-ft { background: #374151; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
     .match-team { display: flex; justify-content: space-between; font-weight: bold; margin: 6px 0; font-size: 15px; }
-    .news-title { font-weight: bold; font-size: 16px; margin-bottom: 6px; color: var(--text); }
+    .news-card { text-decoration: none; color: inherit; display: block; }
+    .news-title { font-weight: bold; font-size: 15px; margin-bottom: 6px; color: var(--text); line-height: 1.3; }
     .news-date { font-size: 11px; color: var(--muted); }
     textarea, input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: #fff; box-sizing: border-box; margin-bottom: 8px; font-size: 14px; }
     .btn { background: var(--accent); color: #000; border: none; padding: 10px 15px; font-weight: bold; border-radius: 6px; width: 100%; cursor: pointer; }
-    .comment { background: #0f172a; border-left: 3px solid var(--accent); padding: 10px; margin-top: 8px; border-radius: 4px; font-size: 13px; }
+    .comment { background: #0f172a; border-left: 3px solid var(--accent); padding: 10px; margin-top: 8px; border-radius: 4px; font-size: 13px; cursor: default; }
+    
+    /* Modal / Match Details Window */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+    .modal-content { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 100%; max-width: 400px; color: var(--text); position: relative; }
+    .close-btn { position: absolute; top: 12px; right: 15px; font-size: 20px; color: var(--muted); cursor: pointer; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -53,30 +60,23 @@
 
     <!-- News Tab -->
     <div id="news" class="tab-content">
-      <div class="card">
-        <div class="news-title">Transfer Headlines: Top European clubs target summer signings</div>
-        <div class="news-date">Updated 10 mins ago • Transfer Hub</div>
-      </div>
-      <div class="card">
-        <div class="news-title">Manager Press Conference: Reactions ahead of weekend derby</div>
-        <div class="news-date">Updated 1 hour ago • Premier League News</div>
-      </div>
+      <div id="news-list">Loading real-time football headlines...</div>
     </div>
 
     <!-- Polls Tab -->
     <div id="polls" class="tab-content">
-      <div class="card">
-        <h3>Who will win the UEFA Champions League this season?</h3>
-        <button class="btn" onclick="vote('Real Madrid')" style="margin-bottom:6px;">Real Madrid</button>
+      <div class="card" style="cursor:default;">
+        <h3>Who will win the Premier League title this season?</h3>
+        <button class="btn" onclick="vote('Arsenal')" style="margin-bottom:6px;">Arsenal</button>
         <button class="btn" onclick="vote('Manchester City')" style="margin-bottom:6px;">Manchester City</button>
-        <button class="btn" onclick="vote('Arsenal')">Arsenal</button>
+        <button class="btn" onclick="vote('Liverpool')">Liverpool</button>
         <p id="poll-output" style="color:var(--accent); font-weight:bold; margin-top:10px;"></p>
       </div>
     </div>
 
     <!-- Community Tab -->
     <div id="community" class="tab-content">
-      <div class="card">
+      <div class="card" style="cursor:default;">
         <h3>Fan Opinion & Discussion</h3>
         <input type="text" id="username" placeholder="Your Name or Fan Tag">
         <textarea id="user-comment" rows="3" placeholder="Share your opinion on today's matches..."></textarea>
@@ -87,12 +87,23 @@
 
   </div>
 
+  <!-- Match Details Modal Window -->
+  <div id="match-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <div id="modal-body">Loading match center...</div>
+    </div>
+  </div>
+
   <script>
+    let matchDataStore = [];
+
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       event.currentTarget.classList.add('active');
+      if (tabId === 'news') fetchNews();
     }
 
     async function fetchLiveScores() {
@@ -107,7 +118,9 @@
           return;
         }
 
-        listContainer.innerHTML = data.events.map(event => {
+        matchDataStore = data.events;
+
+        listContainer.innerHTML = data.events.map((event, index) => {
           const competition = data.leagues[0].name;
           const status = event.status.type.state === 'in' ? `<span class="badge-live">LIVE ${event.status.displayClock}</span>` : `<span class="badge-ft">${event.status.type.shortDetail}</span>`;
           
@@ -118,15 +131,67 @@
           const awayScore = event.competitions[0].competitors[1].score ?? '0';
 
           return `
-            <div class="card">
+            <div class="card" onclick="openMatchDetails(${index})">
               <div class="match-header"><span>${competition}</span>${status}</div>
               <div class="match-team"><span>${home}</span><span>${homeScore}</span></div>
               <div class="match-team"><span>${away}</span><span>${awayScore}</span></div>
+              <div style="font-size:11px; color:var(--accent); margin-top:8px; text-align:right;">Tap for Match Center & Lineup Info &rarr;</div>
             </div>
           `;
         }).join('');
       } catch (err) {
         listContainer.innerHTML = '<div class="card">Unable to load scores right now. Pull to refresh!</div>';
+      }
+    }
+
+    function openMatchDetails(index) {
+      const match = matchDataStore[index];
+      if (!match) return;
+
+      const comp = match.competitions[0];
+      const home = comp.competitors[0];
+      const away = comp.competitors[1];
+      const venue = comp.venue ? comp.venue.fullName : 'Stadium TBD';
+      const statusText = match.status.type.detail;
+
+      document.getElementById('modal-body').innerHTML = `
+        <h3 style="color:var(--accent); margin-top:0;">${home.team.name} vs ${away.team.name}</h3>
+        <p style="font-size:13px; color:var(--muted);">${statusText}</p>
+        <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+        <p><b>Venue:</b> ${venue}</p>
+        <p><b>Score:</b> ${home.team.name} ${home.score || 0} - ${away.score || 0} ${away.team.name}</p>
+        <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+        <h4 style="margin-bottom:5px;">Team Info</h4>
+        <p style="font-size:13px; color:var(--muted);">Official lineups and match stats update live as team sheets are submitted prior to kickoff.</p>
+      `;
+
+      document.getElementById('match-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('match-modal').style.display = 'none';
+    }
+
+    async function fetchNews() {
+      const newsContainer = document.getElementById('news-list');
+      try {
+        const response = await fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/news');
+        const data = await response.json();
+
+        if (!data.articles || data.articles.length === 0) {
+          newsContainer.innerHTML = '<div class="card">No headlines available right now.</div>';
+          return;
+        }
+
+        newsContainer.innerHTML = data.articles.map(art => `
+          <a class="card news-card" href="${art.links.web.href}" target="_blank">
+            <div class="news-title">${art.headline}</div>
+            <div class="news-date">${art.description ? art.description.substring(0, 90) + '...' : 'Tap to read full story'}</div>
+            <div style="font-size:11px; color:var(--accent); margin-top:8px;">Read Full Story &rarr;</div>
+          </a>
+        `).join('');
+      } catch (err) {
+        newsContainer.innerHTML = '<div class="card">Unable to load news right now.</div>';
       }
     }
 
